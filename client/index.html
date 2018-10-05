@@ -1,0 +1,287 @@
+
+<div id="signDiv">
+    Username: <input id="signDiv-username" type="text"></input><br>
+    Password: <input id="signDiv-password" type="password"></input>
+    <button id="signDiv-signIn">Sign In</button>
+    <button id="signDiv-signUp">Sign Up</button>
+</div>
+
+<div id="gameDiv" style="display:none">
+  <canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
+  <div id="chat-text" style="width:500px; height:500px; overflow-y:scroll">
+    <div>Hello World!</div>
+    </div>
+
+    <form id="chat-form">
+    <input type="text" id="chat-input" style="width:500px;" />
+    <input type="submit" text="chat"/>
+    </form>
+</div>
+
+<script src="./socket.io/socket.io.js"></script>
+
+<script>
+'use strict';
+    var socket = io();
+
+    //signIn
+    var gameDiv = document.getElementById('gameDiv');
+    var signDiv = document.getElementById('signDiv');
+    var signDivUsername = document.getElementById('signDiv-username');
+    var signDivSignIn = document.getElementById('signDiv-signIn');
+    var signDivSignUp = document.getElementById('signDiv-signUp');
+    var signDivPassword = document.getElementById('signDiv-password');
+
+
+    signDivSignIn.onclick = function(){
+      socket.emit("signIn", {username:signDivUsername.value, password:signDivPassword.value});
+    }
+
+    signDivSignUp.onclick = function(){
+      socket.emit("signUp", {username:signDivUsername.value, password:signDivPassword.value});
+    }
+
+    socket.on('signUpResponse', function(data){
+      if(data.success){
+        alert("Sign up succesfull.");
+      } else {
+        alert("Sign up unsuccesfull.");
+      }
+    });
+
+    socket.on('signInResponse', function(data){
+      if(data.success){
+        signDiv.style.display = 'none';
+        gameDiv.style.display = 'inline-block';
+      } else {
+        alert("Sign in unsuccesfull.");
+      }
+    });
+
+
+
+    //chat
+    var chatText = document.getElementById('chat-text');
+    var chatForm = document.getElementById('chat-form');
+    var chatInput = document.getElementById('chat-input');
+
+    socket.on('addToChat', function(data){
+      chatText.innerHTML += '<div>' + data + '</div>';
+    });
+
+    socket.on('evalAnswer', function(data){
+      console.log(data);
+    })
+
+    chatForm.onsubmit = function(e){
+      e.preventDefault();
+      if(chatInput.value[0] === '/')
+        socket.emit('evalServer', chatInput.value.slice(1));
+      else
+        socket.emit('sendMsgToServer',chatInput.value);
+      chatInput.value = '';
+    }
+
+
+    //game
+    var WIDTH = 500;
+    var HEIGHT = 500;
+
+    var ctx = document.getElementById("ctx").getContext("2d");
+    ctx.font = '30px Arial';
+
+    var Img = {};
+    Img.player = new Image();
+    Img.player.src = '/client/img/player.png';
+    Img.bullet = new Image();
+    Img.bullet.src = '/client/img/bullet.png';
+    Img.map = new Image();
+    Img.map.src = '/client/img/map.png';
+
+    var PLAYER_LIST = {};
+    var BULLET_LIST = {};
+
+    class Player{
+      constructor(initPack){
+        this.id = initPack.id;
+        this.x =initPack.x;
+        this.y = initPack.y;
+        this.number = initPack.number;
+        this.hp = initPack.hp;
+        this.maxHp = initPack.maxHp;
+        this.score = initPack.score;
+        PLAYER_LIST[this.id] = this;
+      }
+
+      draw(){
+
+        ctx.fillStyle = 'red';
+        var hpWidth = 30* this.hp/this.maxHp;
+
+        var x = this.x - PLAYER_LIST[thisId].x + WIDTH/2;
+        var y = this.y - PLAYER_LIST[thisId].y + HEIGHT/2;
+
+        ctx.fillRect(x - hpWidth/2, y - 40, hpWidth, 4);
+
+        var width = Img.player.width *2;
+        var height = Img.player.height *2;
+
+        ctx.drawImage(Img.player, 0,0, Img.player.width, Img.player.height,
+        x - width/2, y - height/2, width, height);
+
+        // ctx.fillText(this.score, this.x, this.y -60);
+      }
+
+    };
+
+    class Bullet{
+      constructor(initPack){
+        this.id = initPack.id;
+        this.x =initPack.x;
+        this.y = initPack.y;
+        BULLET_LIST[this.id] = this;
+      }
+
+      draw(){
+        var width = Img.bullet.width /2;
+        var height = Img.bullet.height /2;
+
+        var x = this.x - PLAYER_LIST[thisId].x + WIDTH/2;
+        var y = this.y - PLAYER_LIST[thisId].y + HEIGHT/2;
+
+        ctx.drawImage(Img.bullet, 0,0, Img.bullet.width, Img.bullet.height,
+        x - width/2, y-height/2, width, height);
+      }
+    };
+
+var thisId = null;
+
+socket.on('init', function(data){
+ if(data.id && thisId === null){
+   thisId = data.id;
+ }
+  for(var i = 0; i < data.player.length; i++)
+    new Player(data.player[i]);
+  for(var i = 0; i < data.bullet.length; i++)
+    new Bullet(data.bullet[i]);
+});
+
+
+socket.on('update', function(data){
+  for(var i =0; i < data.player.length; i++){
+    var pack = data.player[i];
+    var p = PLAYER_LIST[pack.id];
+    if(p){
+      if(pack.x !== undefined)
+        p.x = pack.x;
+      if(pack.y !== undefined)
+        p.y = pack.y;
+      if(pack.hp !== undefined)
+        p.hp = pack.hp;
+      if(pack.score !== undefined)
+        p.score = pack.score;
+    }
+  }
+  for(var i =0; i < data.bullet.length; i++){
+    var pack = data.bullet[i];
+    var b = BULLET_LIST[pack.id];
+    if(b){
+      if(pack.x !== undefined)
+        b.x = pack.x;
+      if(pack.y !== undefined)
+        b.y = pack.y;
+    }
+  }
+});
+
+socket.on('delete', function(data){
+  for(var i = 0; i < data.player.length; i++)
+    delete PLAYER_LIST[data.player[i]];
+  for(var i = 0; i < data.bullet.length; i++)
+    delete BULLET_LIST[data.bullet[i]];
+});
+
+var drawMap = function(){
+  if(thisId){
+    var x = WIDTH/2 - PLAYER_LIST[thisId].x;
+    var y = HEIGHT/2 - PLAYER_LIST[thisId].y;
+
+    ctx.drawImage(Img.map, x, y);
+  }
+
+}
+
+var drawScore = function(){
+  ctx.fillStyle = 'white';
+  if(PLAYER_LIST[thisId]){
+    ctx.fillText(PLAYER_LIST[thisId].score, 50, 50);
+  }
+}
+
+
+setInterval(function(){
+  ctx.clearRect(0, 0, 500, 500);
+  drawMap();
+  drawScore();
+  for (var i in PLAYER_LIST)
+    PLAYER_LIST[i].draw();
+  for (var i in BULLET_LIST)
+    BULLET_LIST[i].draw();
+}, 40);
+
+
+document.addEventListener("click", function(event){
+  socket.emit('keyPress', {
+    inputId: 'leftMouseButton',
+    x: event.x,
+    y: event.y
+  });
+})
+
+document.onkeydown = function(event) {
+  if (event.keyCode === 68) //d
+    socket.emit('keyPress', {
+      inputId: 'right',
+      state: true
+    });
+  else if (event.keyCode === 83) //s
+    socket.emit('keyPress', {
+      inputId: 'down',
+      state: true
+    });
+  else if (event.keyCode === 65) //a
+    socket.emit('keyPress', {
+      inputId: 'left',
+      state: true
+    });
+  else if (event.keyCode === 87) // w
+    socket.emit('keyPress', {
+      inputId: 'up',
+      state: true
+    });
+
+}
+document.onkeyup = function(event) {
+  if (event.keyCode === 68) //d
+    socket.emit('keyPress', {
+      inputId: 'right',
+      state: false
+    });
+  else if (event.keyCode === 83) //s
+    socket.emit('keyPress', {
+      inputId: 'down',
+      state: false
+    });
+  else if (event.keyCode === 65) //a
+    socket.emit('keyPress', {
+      inputId: 'left',
+      state: false
+    });
+  else if (event.keyCode === 87) // w
+    socket.emit('keyPress', {
+      inputId: 'up',
+      state: false
+    });
+}
+
+</script>
