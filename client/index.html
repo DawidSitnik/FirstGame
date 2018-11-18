@@ -1,105 +1,158 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Multiplayer Game</title>
 
-<div id="signDiv">
-    Username: <input id="signDiv-username" type="text"></input><br>
-    Password: <input id="signDiv-password" type="password"></input>
-    <button id="signDiv-signIn">Sign In</button>
-    <button id="signDiv-signUp">Sign Up</button>
-</div>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
-<div id="gameDiv" style="display:none">
-  <canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
-  <div id="chat-text" style="width:500px; height:500px; overflow-y:scroll">
-    <div>Hello World!</div>
+  <!-- jQuery library -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- Latest compiled JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Merriweather:400,300,300italic,400italic,700,700italic,900,900italic' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="client/css/index.css">
+  <link rel="stylesheet" href="client/css/sitnik.css">
+
+</head>
+
+<body>
+
+  <div id="signDiv">
+    <div class="container">
+      <div class="login-form">
+        <div class="main-div">
+          <div class="panel">
+            <h2>Login</h2>
+            <p>Please enter your login and password</p>
+          </div>
+            <div class="form-group">
+              <input type="text"  value="" class="form-control" id="login" name="user[0]" placeholder="Login">
+            </div>
+            <div class="form-group">
+              <input type="password" class="form-control" id="password" name = "user[1]" placeholder="Password">
+            </div>
+            <button style="width:150px;" class="btn btn-danger" type="button" name="user" onclick=SignIn()>Play</button>
+        </div>
+        <p class="botto-text"> Made by Dawid Sitnik</p>
+      </div>
+    </div>
+    </div>
+
+
+  <div id="gameDiv" >
+    <div id="game">
+      <canvas id="ctx" width="4000" height="4000"></canvas>
+      <canvas id="ctxScore" width="4000" height="4000" ></canvas>
+    </div>
+    <!-- <div id="underGame" width="" >
+      <button id="btn-changeMap" onclick=ChangeMap()>Change map</button>
+    <div id="chat-text">
+      <div>Hit the bucket and enjoy!</div>
     </div>
 
     <form id="chat-form">
-    <input type="text" id="chat-input" style="width:500px;" />
-    <input type="submit" text="chat"/>
+      <input type="text" id="chat-input"/>
+      <input type="submit" text="chat" />
+
     </form>
-</div>
+    </div> -->
+  </div>
 
-<script src="./socket.io/socket.io.js"></script>
 
+</body>
+</html>
+
+<script src="../socket.io/socket.io.js"></script>
+<script src="client/js/Inventory.js"></script>
 <script>
 'use strict';
-    var socket = io();
+
+    let socket = io();
 
     //signIn
-    var gameDiv = document.getElementById('gameDiv');
-    var signDiv = document.getElementById('signDiv');
-    var signDivUsername = document.getElementById('signDiv-username');
-    var signDivSignIn = document.getElementById('signDiv-signIn');
-    var signDivSignUp = document.getElementById('signDiv-signUp');
-    var signDivPassword = document.getElementById('signDiv-password');
+    let gameDiv = document.getElementById('gameDiv');
+    let signDiv = document.getElementById('signDiv');
+    let signDivUsername = document.getElementById('login');
+    let signDivPassword = document.getElementById('password');
 
 
-    signDivSignIn.onclick = function(){
-      socket.emit("signIn", {username:signDivUsername.value, password:signDivPassword.value});
+    let SignIn = function(){
+      socket.emit("signIn", {login:signDivUsername.value, password:signDivPassword.value});
     }
-
-    signDivSignUp.onclick = function(){
-      socket.emit("signUp", {username:signDivUsername.value, password:signDivPassword.value});
-    }
-
-    socket.on('signUpResponse', function(data){
-      if(data.success){
-        alert("Sign up succesfull.");
-      } else {
-        alert("Sign up unsuccesfull.");
-      }
-    });
 
     socket.on('signInResponse', function(data){
       if(data.success){
         signDiv.style.display = 'none';
         gameDiv.style.display = 'inline-block';
       } else {
-        alert("Sign in unsuccesfull.");
+        alert("Dude, your login or password is incorrect.");
       }
     });
 
 
 
     //chat
-    var chatText = document.getElementById('chat-text');
-    var chatForm = document.getElementById('chat-form');
-    var chatInput = document.getElementById('chat-input');
-
-    socket.on('addToChat', function(data){
-      chatText.innerHTML += '<div>' + data + '</div>';
-    });
-
-    socket.on('evalAnswer', function(data){
-      console.log(data);
-    })
-
-    chatForm.onsubmit = function(e){
-      e.preventDefault();
-      if(chatInput.value[0] === '/')
-        socket.emit('evalServer', chatInput.value.slice(1));
-      else
-        socket.emit('sendMsgToServer',chatInput.value);
-      chatInput.value = '';
-    }
-
+    // let chatText = document.getElementById('chat-text');
+    // let chatForm = document.getElementById('chat-form');
+    // let chatInput = document.getElementById('chat-input');
+    //
+    // socket.on('addToChat', function(data){
+    //   chatText.innerHTML += '<div>' + data + '</div>';
+    // });
+    //
+    // socket.on('evalAnswer',function(data){
+  	// 	console.log(data);
+  	// });
+    //
+    // chatForm.onsubmit = function(e){
+    //   e.preventDefault();
+    //   // if(chatInput.value[0] === '/')
+  	// 	// 	socket.emit('evalServer',chatInput.value.slice(1));
+    //     if(chatInput.value[0] === '@'){
+    //       let toWho = chatInput.value.slice(1, chatInput.value.indexOf(','));
+    //       let message = chatInput.value.slice(chatInput.value.indexOf(',')+1);
+    //       let data = {
+    //         toWho: toWho,
+    //         message: message
+    //       }
+    //       socket.emit('sendPrivateMsg', data);
+    //     }
+    //
+    //   else
+    //     socket.emit('sendMsgToServer',chatInput.value);
+    //   chatInput.value = '';
+    // }
 
     //game
-    var WIDTH = 500;
-    var HEIGHT = 500;
+    let WIDTH = 4000;
+    let HEIGHT = 4000;
 
-    var ctx = document.getElementById("ctx").getContext("2d");
-    ctx.font = '30px Arial';
+    let ctx = document.getElementById("ctx").getContext("2d");
+    let ctxScore = document.getElementById("ctxScore").getContext("2d");
+    ctxScore.font = '30px Arial';
 
-    var Img = {};
+    let Img = {};
     Img.player = new Image();
     Img.player.src = '/client/img/player.png';
     Img.bullet = new Image();
     Img.bullet.src = '/client/img/bullet.png';
-    Img.map = new Image();
-    Img.map.src = '/client/img/map.png';
+    Img.bucket = new Image();
+    Img.bucket.src = '/client/img/bucket.png';
+    Img.map = {};
+    Img.map['field'] = new Image();
+    Img.map['field'].src = '/client/img/background.png';
+    Img.map['forest'] = new Image();
+    Img.map['forest'].src = '/client/img/background.png';
 
-    var PLAYER_LIST = {};
-    var BULLET_LIST = {};
+    let PLAYER_LIST = {};
+    let BULLET_LIST = {};
+    let BUCKET_LIST = {};
 
     class Player{
       constructor(initPack){
@@ -110,24 +163,35 @@
         this.hp = initPack.hp;
         this.maxHp = initPack.maxHp;
         this.score = initPack.score;
+        this.map = initPack.map;
+        this.radius = initPack.radius;
         PLAYER_LIST[this.id] = this;
       }
 
       draw(){
+        if(PLAYER_LIST[thisId].map !== this.map)
+          return;
 
-        ctx.fillStyle = 'red';
-        var hpWidth = 30* this.hp/this.maxHp;
+        let player = PLAYER_LIST[thisId];
+        ctx.fillStyle = 'red'; //used to change color of Rect
+        let hpWidth = 30* this.hp/this.maxHp;
 
-        var x = this.x - PLAYER_LIST[thisId].x + WIDTH/2;
-        var y = this.y - PLAYER_LIST[thisId].y + HEIGHT/2;
+        let x = this.x - PLAYER_LIST[thisId].x + WIDTH/2;
+        let y = this.y - PLAYER_LIST[thisId].y + HEIGHT/2;
 
-        ctx.fillRect(x - hpWidth/2, y - 40, hpWidth, 4);
+        ctx.fillRect(x - hpWidth/2, y - 40, hpWidth, 4); //used to draw rect
 
-        var width = Img.player.width *2;
-        var height = Img.player.height *2;
+        let width = Img.player.width *2;
+        let height = Img.player.height *2;
+        let radius = PLAYER_LIST[thisId].radius;
+        let scale = 96/(radius*2);
 
-        ctx.drawImage(Img.player, 0,0, Img.player.width, Img.player.height,
-        x - width/2, y - height/2, width, height);
+        if(this.id == thisId){
+          ctx.drawImage(Img.player, 0,0, Img.player.width, Img.player.height, x - width/2, y - height/2, width, height);
+        }else{
+          ctx.drawImage(Img.player, 0,0, Img.player.width, Img.player.height, x - width/2, y - height/2, (this.radius*2)*scale ,(this.radius*2)*scale);
+
+        }
 
         // ctx.fillText(this.score, this.x, this.y -60);
       }
@@ -139,38 +203,65 @@
         this.id = initPack.id;
         this.x =initPack.x;
         this.y = initPack.y;
+        this.map = initPack.map;
         BULLET_LIST[this.id] = this;
       }
 
       draw(){
-        var width = Img.bullet.width /2;
-        var height = Img.bullet.height /2;
+        if(PLAYER_LIST[thisId].map !== this.map)
+          return;
 
-        var x = this.x - PLAYER_LIST[thisId].x + WIDTH/2;
-        var y = this.y - PLAYER_LIST[thisId].y + HEIGHT/2;
+        let width = Img.bullet.width /2;
+        let height = Img.bullet.height /2;
+
+        let x = this.x - PLAYER_LIST[thisId].x + WIDTH/2;
+        let y = this.y - PLAYER_LIST[thisId].y + HEIGHT/2;
 
         ctx.drawImage(Img.bullet, 0,0, Img.bullet.width, Img.bullet.height,
         x - width/2, y-height/2, width, height);
       }
     };
 
-var thisId = null;
+    class Bucket{
+      constructor(initPack){
+        this.id = initPack.id;
+        this.x = initPack.x;
+        this.y = initPack.y;
+        BUCKET_LIST[this.id] = this;
+      }
+
+      draw(){
+        let width = Img.bullet.width /2;
+        let height = Img.bullet.height /2;
+
+        let x = this.x - PLAYER_LIST[thisId].x + WIDTH/2;
+        let y = this.y - PLAYER_LIST[thisId].y + HEIGHT/2;
+
+        ctx.drawImage(Img.bucket, 0,0, Img.bucket.width, Img.bucket.height,
+        x - width/2, y-height/2, width, height);
+      }
+    }
+
+let thisId = null;
 
 socket.on('init', function(data){
+
  if(data.id && thisId === null){
    thisId = data.id;
  }
-  for(var i = 0; i < data.player.length; i++)
+  for(let i = 0; i < data.player.length; i++)
     new Player(data.player[i]);
-  for(var i = 0; i < data.bullet.length; i++)
+  for(let i = 0; i < data.bullet.length; i++)
     new Bullet(data.bullet[i]);
+  for(let i = 0; i < data.bucket.length; i++)
+      new Bucket(data.bucket[i]);
 });
 
 
 socket.on('update', function(data){
-  for(var i =0; i < data.player.length; i++){
-    var pack = data.player[i];
-    var p = PLAYER_LIST[pack.id];
+  for(let i =0; i < data.player.length; i++){
+    let pack = data.player[i];
+    let p = PLAYER_LIST[pack.id];
     if(p){
       if(pack.x !== undefined)
         p.x = pack.x;
@@ -180,11 +271,16 @@ socket.on('update', function(data){
         p.hp = pack.hp;
       if(pack.score !== undefined)
         p.score = pack.score;
+      if(pack.map !== undefined)
+        p.map = pack.map;
+      if(pack.radius !== undefined)
+        p.radius = pack.radius;
+
     }
   }
-  for(var i =0; i < data.bullet.length; i++){
-    var pack = data.bullet[i];
-    var b = BULLET_LIST[pack.id];
+  for(let i =0; i < data.bullet.length; i++){
+    let pack = data.bullet[i];
+    let b = BULLET_LIST[pack.id];
     if(b){
       if(pack.x !== undefined)
         b.x = pack.x;
@@ -195,38 +291,58 @@ socket.on('update', function(data){
 });
 
 socket.on('delete', function(data){
-  for(var i = 0; i < data.player.length; i++)
+  for(let i = 0; i < data.player.length; i++)
     delete PLAYER_LIST[data.player[i]];
-  for(var i = 0; i < data.bullet.length; i++)
+  for(let i = 0; i < data.bullet.length; i++)
     delete BULLET_LIST[data.bullet[i]];
+  for(let i = 0; i < data.bucket.length; i++)
+    delete BUCKET_LIST[data.bucket[i]];
 });
 
-var drawMap = function(){
+let drawMap = function(){
   if(thisId){
-    var x = WIDTH/2 - PLAYER_LIST[thisId].x;
-    var y = HEIGHT/2 - PLAYER_LIST[thisId].y;
+    let player = PLAYER_LIST[thisId];
+    let x = WIDTH/2 - player.x;
+    let y = HEIGHT/2 - player.y;
+    for(let i=0; i<=4000; i+=1000){
+      for(let j=0; j<=4000; j+=1000){
+        ctx.drawImage(Img.map[player.map], x+i, y+j);
+      }
+    }
 
-    ctx.drawImage(Img.map, x, y);
   }
 
 }
 
-var drawScore = function(){
-  ctx.fillStyle = 'white';
-  if(PLAYER_LIST[thisId]){
-    ctx.fillText(PLAYER_LIST[thisId].score, 50, 50);
+let drawScore = function(){
+  if(!PLAYER_LIST[thisId]) return;
+  if(PLAYER_LIST[thisId].score === lastScore){
+    return;
   }
+    ctxScore.clearRect(0, 0, 800, 800);
+    lastScore = PLAYER_LIST[thisId].score;
+    ctxScore.fillStyle = 'white';
+    ctxScore.fillText(PLAYER_LIST[thisId].score, 50, 50);
+
+}
+
+let lastScore = null;
+
+let ChangeMap = function(){
+  socket.emit('changeMap');
 }
 
 
 setInterval(function(){
-  ctx.clearRect(0, 0, 500, 500);
+  ctx.clearRect(0, 0, 800, 800);
   drawMap();
   drawScore();
-  for (var i in PLAYER_LIST)
+  for (let i in PLAYER_LIST)
     PLAYER_LIST[i].draw();
-  for (var i in BULLET_LIST)
+  for (let i in BULLET_LIST)
     BULLET_LIST[i].draw();
+  for (let i in BUCKET_LIST)
+    BUCKET_LIST[i].draw();
 }, 40);
 
 
@@ -282,6 +398,10 @@ document.onkeyup = function(event) {
       inputId: 'up',
       state: false
     });
+}
+
+document.oncontextmenu = function(event){
+  event.preventDefault();
 }
 
 </script>

@@ -1,0 +1,62 @@
+html, body {
+  width:  100%;
+  height: 100%;
+  margin: 0px;
+}
+
+#signDiv{
+  background-image: url("background.jpg");
+  width: 100%;
+  height: 950px;
+  padding:0px;
+}
+
+#gameDiv{
+  background-color: #fff;
+  display: none;
+  width: 100%;
+  height: 100%;
+}
+
+#game{
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  margin-top: -2000px;
+  margin-left: -2000px;
+}
+
+#underGame{
+  display: inline;
+  width: 800px;
+  position: absolute;
+  margin-top: 820px;
+  left: 50%;
+  margin-left: -390px;
+
+}
+
+#ctx{
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  border:1px solid #000000;
+}
+
+#ctxScore{
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  border:1px solid #000000;
+}
+
+#chat-text{
+  left: 10px;
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+}
+
+#chat-input{
+  width: 100%;
+}
