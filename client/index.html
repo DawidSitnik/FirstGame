@@ -1,5 +1,6 @@
 <!doctype html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <title>Multiplayer Game</title>
@@ -31,24 +32,23 @@
             <h2>Login</h2>
             <p>Please enter your login and password</p>
           </div>
-            <div class="form-group">
-              <input type="text"  value="" class="form-control" id="login" name="user[0]" placeholder="Login">
-            </div>
-            <div class="form-group">
-              <input type="password" class="form-control" id="password" name = "user[1]" placeholder="Password">
-            </div>
-            <button style="width:150px;" class="btn btn-danger" type="button" name="user" onclick=SignIn()>Play</button>
+          <div class="form-group">
+            <input type="text" value="" class="form-control" id="login" name="user[0]" placeholder="Login">
+          </div>
+          <div class="form-group">
+            <input type="password" class="form-control" id="password" name="user[1]" placeholder="Password">
+          </div>
+          <button style="width:150px;" class="btn btn-danger" type="button" name="user" onclick=SignIn()>Play</button>
         </div>
         <p class="botto-text"> Made by Dawid Sitnik</p>
       </div>
     </div>
-    </div>
+  </div>
 
-
-  <div id="gameDiv" >
+  <div id="gameDiv">
     <div id="game">
       <canvas id="ctx" width="4000" height="4000"></canvas>
-      <canvas id="ctxScore" width="4000" height="4000" ></canvas>
+      <canvas id="ctxScore" width="4000" height="4000"></canvas>
     </div>
     <!-- <div id="underGame" width="" >
       <button id="btn-changeMap" onclick=ChangeMap()>Change map</button>
@@ -63,8 +63,6 @@
     </form>
     </div> -->
   </div>
-
-
 </body>
 </html>
 
@@ -73,267 +71,280 @@
 <script>
 'use strict';
 
-    let socket = io();
+let socket = io();
 
-    //signIn
-    let gameDiv = document.getElementById('gameDiv');
-    let signDiv = document.getElementById('signDiv');
-    let signDivUsername = document.getElementById('login');
-    let signDivPassword = document.getElementById('password');
+//signIn elements
+let gameDiv = document.getElementById('gameDiv');
+let signDiv = document.getElementById('signDiv');
+let signDivUsername = document.getElementById('login');
+let signDivPassword = document.getElementById('password');
 
+//send login and password from inputs to the server
+let SignIn = function() {
+  socket.emit("signIn", {
+    login: signDivUsername.value,
+    password: signDivPassword.value
+  });
+}
 
-    let SignIn = function(){
-      socket.emit("signIn", {login:signDivUsername.value, password:signDivPassword.value});
-    }
+//If signing correct, changing to the game mode
+socket.on('signInResponse', function(data) {
+  if (data.success) {
+    signDiv.style.display = 'none';
+    gameDiv.style.display = 'inline-block';
+  } else {
+    alert("Dude, your login or password is incorrect.");
+  }
+});
+//chat
+// let chatText = document.getElementById('chat-text');
+// let chatForm = document.getElementById('chat-form');
+// let chatInput = document.getElementById('chat-input');
+//
+// socket.on('addToChat', function(data){
+//   chatText.innerHTML += '<div>' + data + '</div>';
+// });
+//
+// socket.on('evalAnswer',function(data){
+// 	console.log(data);
+// });
+//
+// chatForm.onsubmit = function(e){
+//   e.preventDefault();
+//   // if(chatInput.value[0] === '/')
+// 	// 	socket.emit('evalServer',chatInput.value.slice(1));
+//     if(chatInput.value[0] === '@'){
+//       let toWho = chatInput.value.slice(1, chatInput.value.indexOf(','));
+//       let message = chatInput.value.slice(chatInput.value.indexOf(',')+1);
+//       let data = {
+//         toWho: toWho,
+//         message: message
+//       }
+//       socket.emit('sendPrivateMsg', data);
+//     }
+//
+//   else
+//     socket.emit('sendMsgToServer',chatInput.value);
+//   chatInput.value = '';
+// }
 
-    socket.on('signInResponse', function(data){
-      if(data.success){
-        signDiv.style.display = 'none';
-        gameDiv.style.display = 'inline-block';
-      } else {
-        alert("Dude, your login or password is incorrect.");
-      }
-    });
+let WIDTH = 4000;
+let HEIGHT = 4000;
 
+//Basic lists
+let PLAYER_LIST = {};
+let BULLET_LIST = {};
+let BUCKET_LIST = {};
 
-
-    //chat
-    // let chatText = document.getElementById('chat-text');
-    // let chatForm = document.getElementById('chat-form');
-    // let chatInput = document.getElementById('chat-input');
-    //
-    // socket.on('addToChat', function(data){
-    //   chatText.innerHTML += '<div>' + data + '</div>';
-    // });
-    //
-    // socket.on('evalAnswer',function(data){
-  	// 	console.log(data);
-  	// });
-    //
-    // chatForm.onsubmit = function(e){
-    //   e.preventDefault();
-    //   // if(chatInput.value[0] === '/')
-  	// 	// 	socket.emit('evalServer',chatInput.value.slice(1));
-    //     if(chatInput.value[0] === '@'){
-    //       let toWho = chatInput.value.slice(1, chatInput.value.indexOf(','));
-    //       let message = chatInput.value.slice(chatInput.value.indexOf(',')+1);
-    //       let data = {
-    //         toWho: toWho,
-    //         message: message
-    //       }
-    //       socket.emit('sendPrivateMsg', data);
-    //     }
-    //
-    //   else
-    //     socket.emit('sendMsgToServer',chatInput.value);
-    //   chatInput.value = '';
-    // }
-
-    //game
-    let WIDTH = 4000;
-    let HEIGHT = 4000;
-
-    let ctx = document.getElementById("ctx").getContext("2d");
-    let ctxScore = document.getElementById("ctxScore").getContext("2d");
-    ctxScore.font = '30px Arial';
-
-    let Img = {};
-    Img.player = new Image();
-    Img.player.src = '/client/img/player.png';
-    Img.bullet = new Image();
-    Img.bullet.src = '/client/img/bullet.png';
-    Img.bucket = new Image();
-    Img.bucket.src = '/client/img/bucket.png';
-    Img.map = {};
-    Img.map['field'] = new Image();
-    Img.map['field'].src = '/client/img/background.png';
-    Img.map['forest'] = new Image();
-    Img.map['forest'].src = '/client/img/background.png';
-
-    let PLAYER_LIST = {};
-    let BULLET_LIST = {};
-    let BUCKET_LIST = {};
-
-    class Player{
-      constructor(initPack){
-        this.id = initPack.id;
-        this.x =initPack.x;
-        this.y = initPack.y;
-        this.number = initPack.number;
-        this.hp = initPack.hp;
-        this.maxHp = initPack.maxHp;
-        this.score = initPack.score;
-        this.map = initPack.map;
-        this.radius = initPack.radius;
-        PLAYER_LIST[this.id] = this;
-      }
-
-      draw(){
-        if(PLAYER_LIST[thisId].map !== this.map)
-          return;
-
-        let player = PLAYER_LIST[thisId];
-        ctx.fillStyle = 'red'; //used to change color of Rect
-        let hpWidth = 30* this.hp/this.maxHp;
-
-        let x = this.x - PLAYER_LIST[thisId].x + WIDTH/2;
-        let y = this.y - PLAYER_LIST[thisId].y + HEIGHT/2;
-
-        ctx.fillRect(x - hpWidth/2, y - 40, hpWidth, 4); //used to draw rect
-
-        let width = Img.player.width *2;
-        let height = Img.player.height *2;
-        let radius = PLAYER_LIST[thisId].radius;
-        let scale = 96/(radius*2);
-
-        if(this.id == thisId){
-          ctx.drawImage(Img.player, 0,0, Img.player.width, Img.player.height, x - width/2, y - height/2, width, height);
-        }else{
-          ctx.drawImage(Img.player, 0,0, Img.player.width, Img.player.height, x - width/2, y - height/2, (this.radius*2)*scale ,(this.radius*2)*scale);
-
-        }
-
-        // ctx.fillText(this.score, this.x, this.y -60);
-      }
-
-    };
-
-    class Bullet{
-      constructor(initPack){
-        this.id = initPack.id;
-        this.x =initPack.x;
-        this.y = initPack.y;
-        this.map = initPack.map;
-        BULLET_LIST[this.id] = this;
-      }
-
-      draw(){
-        if(PLAYER_LIST[thisId].map !== this.map)
-          return;
-
-        let width = Img.bullet.width /2;
-        let height = Img.bullet.height /2;
-
-        let x = this.x - PLAYER_LIST[thisId].x + WIDTH/2;
-        let y = this.y - PLAYER_LIST[thisId].y + HEIGHT/2;
-
-        ctx.drawImage(Img.bullet, 0,0, Img.bullet.width, Img.bullet.height,
-        x - width/2, y-height/2, width, height);
-      }
-    };
-
-    class Bucket{
-      constructor(initPack){
-        this.id = initPack.id;
-        this.x = initPack.x;
-        this.y = initPack.y;
-        BUCKET_LIST[this.id] = this;
-      }
-
-      draw(){
-        let width = Img.bullet.width /2;
-        let height = Img.bullet.height /2;
-
-        let x = this.x - PLAYER_LIST[thisId].x + WIDTH/2;
-        let y = this.y - PLAYER_LIST[thisId].y + HEIGHT/2;
-
-        ctx.drawImage(Img.bucket, 0,0, Img.bucket.width, Img.bucket.height,
-        x - width/2, y-height/2, width, height);
-      }
-    }
 
 let thisId = null;
 
-socket.on('init', function(data){
+//canvas
+let ctx = document.getElementById("ctx").getContext("2d");
+let ctxScore = document.getElementById("ctxScore").getContext("2d");
+ctxScore.font = '30px Arial';
 
- if(data.id && thisId === null){
-   thisId = data.id;
- }
-  for(let i = 0; i < data.player.length; i++)
+//images for canvas
+let Img = {};
+Img.player = new Image();
+Img.player.src = '/client/img/player1.png';
+Img.playerNina = new Image();
+Img.playerNina.src = '/client/img/player2.png';
+Img.bullet = new Image();
+Img.bullet.src = '/client/img/weed.png';
+Img.bucket = new Image();
+Img.bucket.src = '/client/img/bucket.png';
+Img.map = {};
+Img.map['field'] = new Image();
+Img.map['field'].src = '/client/img/grid.png';
+Img.map['forest'] = new Image();
+Img.map['forest'].src = '/client/img/grid.png';
+
+
+class Player {
+  constructor(initPack) {
+    this.id = initPack.id;
+    this.x = initPack.x;
+    this.y = initPack.y;
+    this.number = initPack.number;
+    this.map = initPack.map;
+    this.radius = initPack.radius;
+    this.speed = initPack.speed;
+    this.login = initPack.login;
+    PLAYER_LIST[this.id] = this;
+  }
+
+  draw() {
+    if (PLAYER_LIST[thisId].map !== this.map)
+      return;
+
+    let player = PLAYER_LIST[thisId];
+
+    let x = this.x - PLAYER_LIST[thisId].x + WIDTH / 2;
+    let y = this.y - PLAYER_LIST[thisId].y + HEIGHT / 2;
+
+    //dividing width and high because sprite sizes are 300x300, we want to display 50x50
+    let width = Img.player.width * 2 / 6;
+    let height = Img.player.height * 2 / 6;
+    let radius = PLAYER_LIST[thisId].radius;
+    let scale = 96 / (radius * 2);
+
+    ctx.fillStyle = 'red';
+    ctx.font = "25px Verdana";
+
+    //just for one special player
+    if (player.login == "Myszor") {
+      ctx.drawImage(Img.playerNina, 0, 0, Img.player.width, Img.player.height, x - width / 2 - this.radius / 4, y - height / 2 - this.radius / 4, (this.radius * 2), (this.radius * 2));
+    } else
+      ctx.drawImage(Img.player, 0, 0, Img.player.width, Img.player.height, x - width / 2 - this.radius / 4, y - height / 2 - this.radius / 4, (this.radius * 2), (this.radius * 2));
+    ctx.fillText(this.login, x - width / 2 + this.radius / 2 - (this.login.length / 2) * 9, y - height / 2 - this.radius / 3);
+  }
+};
+
+class Bullet {
+  constructor(initPack) {
+    this.id = initPack.id;
+    this.x = initPack.x;
+    this.y = initPack.y;
+    this.map = initPack.map;
+    BULLET_LIST[this.id] = this;
+  }
+
+  draw() {
+    if (PLAYER_LIST[thisId].map !== this.map)
+      return;
+
+    let width = Img.bullet.width / 2 / 2;
+    let height = Img.bullet.height / 2 / 2;
+
+    let x = this.x - PLAYER_LIST[thisId].x + WIDTH / 2;
+    let y = this.y - PLAYER_LIST[thisId].y + HEIGHT / 2;
+
+    ctx.drawImage(Img.bullet, 0, 0, Img.bullet.width, Img.bullet.height,
+      x - width / 2, y - height / 2, width, height);
+  }
+};
+
+class Bucket {
+  constructor(initPack) {
+    this.id = initPack.id;
+    this.x = initPack.x;
+    this.y = initPack.y;
+    BUCKET_LIST[this.id] = this;
+  }
+
+  draw() {
+    let width = Img.bullet.width / 2 / 1.5;
+    let height = Img.bullet.height / 2 / 1.5;
+
+    let x = this.x - PLAYER_LIST[thisId].x + WIDTH / 2;
+    let y = this.y - PLAYER_LIST[thisId].y + HEIGHT / 2;
+
+    ctx.drawImage(Img.bucket, 0, 0, Img.bucket.width, Img.bucket.height,
+      x - width / 2, y - height / 2, width, height);
+  }
+}
+
+socket.on('init', function(data) {
+  if (data.id && thisId === null) {
+    thisId = data.id;
+  }
+  for (let i = 0; i < data.player.length; i++)
     new Player(data.player[i]);
-  for(let i = 0; i < data.bullet.length; i++)
+  for (let i = 0; i < data.bullet.length; i++)
     new Bullet(data.bullet[i]);
-  for(let i = 0; i < data.bucket.length; i++)
-      new Bucket(data.bucket[i]);
+  for (let i = 0; i < data.bucket.length; i++)
+    new Bucket(data.bucket[i]);
 });
 
 
-socket.on('update', function(data){
-  for(let i =0; i < data.player.length; i++){
+socket.on('update', function(data) {
+  for (let i = 0; i < data.player.length; i++) {
     let pack = data.player[i];
     let p = PLAYER_LIST[pack.id];
-    if(p){
-      if(pack.x !== undefined)
+    if (p) {
+      if (pack.x !== undefined)
         p.x = pack.x;
-      if(pack.y !== undefined)
+      if (pack.y !== undefined)
         p.y = pack.y;
-      if(pack.hp !== undefined)
-        p.hp = pack.hp;
-      if(pack.score !== undefined)
-        p.score = pack.score;
-      if(pack.map !== undefined)
+      if (pack.map !== undefined)
         p.map = pack.map;
-      if(pack.radius !== undefined)
+      if (pack.radius !== undefined)
         p.radius = pack.radius;
-
+      if (pack.speed !== undefined)
+        p.speed = pack.speed;
     }
   }
-  for(let i =0; i < data.bullet.length; i++){
+
+  for (let i = 0; i < data.bullet.length; i++) {
     let pack = data.bullet[i];
     let b = BULLET_LIST[pack.id];
-    if(b){
-      if(pack.x !== undefined)
+    if (b) {
+      if (pack.x !== undefined)
         b.x = pack.x;
-      if(pack.y !== undefined)
+      if (pack.y !== undefined)
         b.y = pack.y;
     }
   }
 });
 
-socket.on('delete', function(data){
-  for(let i = 0; i < data.player.length; i++)
+//if someone finished a game
+socket.on('delete', function(data) {
+  for (let i = 0; i < data.player.length; i++)
     delete PLAYER_LIST[data.player[i]];
-  for(let i = 0; i < data.bullet.length; i++)
+  for (let i = 0; i < data.bullet.length; i++)
     delete BULLET_LIST[data.bullet[i]];
-  for(let i = 0; i < data.bucket.length; i++)
+  for (let i = 0; i < data.bucket.length; i++)
     delete BUCKET_LIST[data.bucket[i]];
 });
 
-let drawMap = function(){
-  if(thisId){
+//if someone died
+socket.on('death', function(data) {
+  window.location.href = 'https://www.youtube.com/watch?v=ElCaTVyCx-Q';
+});
+
+//drawing maps made from 4x4 pictures
+let drawMap = function() {
+  if (thisId) {
     let player = PLAYER_LIST[thisId];
-    let x = WIDTH/2 - player.x;
-    let y = HEIGHT/2 - player.y;
-    for(let i=0; i<=4000; i+=1000){
-      for(let j=0; j<=4000; j+=1000){
-        ctx.drawImage(Img.map[player.map], x+i, y+j);
+    let x = WIDTH / 2 - player.x;
+    let y = HEIGHT / 2 - player.y;
+    for (let i = 0; i <= 5000; i += 1037) {
+      for (let j = 0; j <= 4400; j += 768) {
+        ctx.drawImage(Img.map[player.map], x + i, y + j);
       }
     }
-
   }
-
 }
 
-let drawScore = function(){
-  if(!PLAYER_LIST[thisId]) return;
-  if(PLAYER_LIST[thisId].score === lastScore){
+//drawing user score
+let drawScore = function() {
+  if (!PLAYER_LIST[thisId]) return;
+  if (PLAYER_LIST[thisId].radius === lastRadius) {
     return;
   }
-    ctxScore.clearRect(0, 0, 800, 800);
-    lastScore = PLAYER_LIST[thisId].score;
-    ctxScore.fillStyle = 'white';
-    ctxScore.fillText(PLAYER_LIST[thisId].score, 50, 50);
-
+  ctxScore.clearRect(0, 0, 4000, 4000);
+  lastRadius = PLAYER_LIST[thisId].radius;
+  ctxScore.fillStyle = 'red';
+  ctxScore.font = "30px Verdana";
+  ctxScore.fillText("Score: ", 1100, 1550);
+  ctxScore.fillText((PLAYER_LIST[thisId].radius) - 48, 1180, 1550);
 }
 
-let lastScore = null;
+let lastRadius = null;
 
-let ChangeMap = function(){
-  socket.emit('changeMap');
-}
+// let ChangeMap = function() {
+//   socket.emit('changeMap');
+// }
 
-
-setInterval(function(){
+//main loop
+setInterval(function() {
+  socket.emit("screen", {
+    bodyWidth: document.body.clientHeight,
+    bodyHeight: document.body.clientWidth,
+    screenHeight: screen.height,
+    screenWidth: screen.width
+  });
   ctx.clearRect(0, 0, 800, 800);
   drawMap();
   drawScore();
@@ -345,8 +356,9 @@ setInterval(function(){
     BUCKET_LIST[i].draw();
 }, 40);
 
-
-document.addEventListener("click", function(event){
+////////////////////////
+//handling clicks events
+document.addEventListener("click", function(event) {
   socket.emit('keyPress', {
     inputId: 'leftMouseButton',
     x: event.x,
@@ -354,6 +366,7 @@ document.addEventListener("click", function(event){
   });
 })
 
+//pressed buttons
 document.onkeydown = function(event) {
   if (event.keyCode === 68) //d
     socket.emit('keyPress', {
@@ -377,6 +390,8 @@ document.onkeydown = function(event) {
     });
 
 }
+
+//unpressed buttons
 document.onkeyup = function(event) {
   if (event.keyCode === 68) //d
     socket.emit('keyPress', {
@@ -400,8 +415,8 @@ document.onkeyup = function(event) {
     });
 }
 
-document.oncontextmenu = function(event){
+//prevent from using a right click
+document.oncontextmenu = function(event) {
   event.preventDefault();
 }
-
 </script>
