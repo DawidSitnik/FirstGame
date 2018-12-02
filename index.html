@@ -1,0 +1,67 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="Multiplayer Game" content="">
+  <meta name="Dawid Sitnik" content="">
+
+  <title>Multiplayer Game</title>
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+  <link href='https://fonts.googleapis.com/css?family=Merriweather:400,300,300italic,400italic,700,700italic,900,900italic' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="/~dawid1/index.css">
+  <!-- <link rel="stylesheet" href="./index.css"> -->
+
+  <!-- jQuery library -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- Latest compiled JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body id="LoginForm">
+  <div class="container">
+    <div class="login-form">
+      <div class="main-div">
+        <div class="panel">
+          <h2>Registration</h2>
+          <p>Please enter your login and password</p>
+        </div>
+        <form id="Login" name="form" action='checkLogin.cgi' method="post" autocomplete="off">
+          <div class="form-group">
+            <input type="text" value="" class="form-control" id="login" name="login" placeholder="Login">
+          </div>
+          <div class="form-group">
+            <input value ="" type="password" class="form-control" id="password" name="password" placeholder="Password">
+          </div>
+          <button type="button" onclick="CheckPassword(document.form.password)" class="btn btn-danger">Register</button>
+        </form>
+      </div>
+      <p class="botto-text"> Made by Dawid Sitnik</p>
+    </div>
+  </div>
+  </div>
+</body>
+
+<script>
+window.onload = function(){
+ document.getElementById("login").value = "";
+ document.getElementById("password").value = "";
+}
+
+function CheckPassword(inputtxt)
+{
+var passw=  /^[A-Za-z]\w{7,14}$/;
+if(inputtxt.value.match(passw)) {
+  document.getElementById('Login').submit();
+}
+else{
+alert('Sorry dude, your password must contain from 7 to 14 characters.');
+}
+}
+</script>
+
+</html>

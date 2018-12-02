@@ -4,8 +4,15 @@
   "description": "",
   "main": "app.js",
   "dependencies": {
-    "express": "^4.16.3",
-    "mongojs": "^2.6.0",
+    "body-parser": "^1.18.3",
+    "express": "^4.13.4",
+    "get-window-size": "^0.1.0",
+    "jsonwebtoken": "^7.3.0",
+    "mongodb": "^3.1.8",
+    "mongoose": "^5.3.9",
+    "mysql": "^2.16.0",
+    "phantom-proxy": "^0.1.792",
+    "screenres": "^2.0.1",
     "socket.io": "^1.4.5"
   },
   "engines": {
@@ -13,7 +20,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "node app.js"
+    "start": "node app.js"
   },
   "author": "",
   "license": "ISC"

@@ -67,7 +67,6 @@
 </html>
 
 <script src="../socket.io/socket.io.js"></script>
-<script src="client/js/Inventory.js"></script>
 <script>
 'use strict';
 
@@ -146,14 +145,29 @@ ctxScore.font = '30px Arial';
 
 //images for canvas
 let Img = {};
-Img.player = new Image();
-Img.player.src = '/client/img/player1.png';
-Img.playerNina = new Image();
-Img.playerNina.src = '/client/img/player2.png';
+Img.playerRed = new Image();
+Img.playerRed.src = '/client/img/playerRed.png';
+Img.playerGreen = new Image();
+Img.playerGreen.src = '/client/img/playerGreen.png';
+Img.playerBlue = new Image();
+Img.playerBlue.src = '/client/img/playerBlue.png';
+Img.playerYellow = new Image();
+Img.playerYellow.src = '/client/img/playerYellow.png';
+
 Img.bullet = new Image();
-Img.bullet.src = '/client/img/weed.png';
-Img.bucket = new Image();
-Img.bucket.src = '/client/img/bucket.png';
+Img.bullet.src = '/client/img/bullet.png';
+
+Img.bucketRed = new Image();
+Img.bucketRed.src = '/client/img/bucketRed.png';
+Img.bucketGreen = new Image();
+Img.bucketGreen.src = '/client/img/bucketGreen.png';
+Img.bucketBlue = new Image();
+Img.bucketBlue.src = '/client/img/bucketBlue.png';
+Img.bucketYellow = new Image();
+Img.bucketYellow.src = '/client/img/bucketYellow.png';
+Img.bucketPurple = new Image();
+Img.bucketPurple.src = '/client/img/bucketPurple.png';
+
 Img.map = {};
 Img.map['field'] = new Image();
 Img.map['field'].src = '/client/img/grid.png';
@@ -172,6 +186,7 @@ class Player {
     this.speed = initPack.speed;
     this.login = initPack.login;
     PLAYER_LIST[this.id] = this;
+    this.image = Math.floor(4*Math.random());
   }
 
   draw() {
@@ -184,20 +199,27 @@ class Player {
     let y = this.y - PLAYER_LIST[thisId].y + HEIGHT / 2;
 
     //dividing width and high because sprite sizes are 300x300, we want to display 50x50
-    let width = Img.player.width * 2 / 6;
-    let height = Img.player.height * 2 / 6;
+    let width = Img.playerRed.width * 2 / 6;
+    let height = Img.playerRed.height * 2 / 6;
     let radius = PLAYER_LIST[thisId].radius;
     let scale = 96 / (radius * 2);
 
-    ctx.fillStyle = 'red';
-    ctx.font = "25px Verdana";
+    ctx.fillStyle = 'black';
+    ctx.font = "30px Arial";
 
     //just for one special player
-    if (player.login == "Myszor") {
-      ctx.drawImage(Img.playerNina, 0, 0, Img.player.width, Img.player.height, x - width / 2 - this.radius / 4, y - height / 2 - this.radius / 4, (this.radius * 2), (this.radius * 2));
-    } else
-      ctx.drawImage(Img.player, 0, 0, Img.player.width, Img.player.height, x - width / 2 - this.radius / 4, y - height / 2 - this.radius / 4, (this.radius * 2), (this.radius * 2));
+      if(this.image >= 0 && this.image < 1)
+        ctx.drawImage(Img.playerRed, 0, 0, Img.playerRed.width, Img.playerRed.height, x - width / 2 - this.radius / 4, y - height / 2 - this.radius / 4, (this.radius * 2), (this.radius * 2));
+      else if (this.image >= 1 && this.image < 2)
+        ctx.drawImage(Img.playerGreen, 0, 0, Img.playerGreen.width, Img.playerGreen.height, x - width / 2 - this.radius / 4, y - height / 2 - this.radius / 4, (this.radius * 2), (this.radius * 2));
+      else if (this.image >= 2 && this.image < 3)
+        ctx.drawImage(Img.playerBlue, 0, 0, Img.playerBlue.width, Img.playerBlue.height, x - width / 2 - this.radius / 4, y - height / 2 - this.radius / 4, (this.radius * 2), (this.radius * 2));
+      else if (this.image >= 3 && this.image <= 4)
+        ctx.drawImage(Img.playerYellow, 0, 0, Img.playerYellow.width, Img.playerYellow.height, x - width / 2 - this.radius / 4, y - height / 2 - this.radius / 4, (this.radius * 2), (this.radius * 2));
+
+
     ctx.fillText(this.login, x - width / 2 + this.radius / 2 - (this.login.length / 2) * 9, y - height / 2 - this.radius / 3);
+
   }
 };
 
@@ -208,6 +230,7 @@ class Bullet {
     this.y = initPack.y;
     this.map = initPack.map;
     BULLET_LIST[this.id] = this;
+
   }
 
   draw() {
@@ -231,17 +254,29 @@ class Bucket {
     this.x = initPack.x;
     this.y = initPack.y;
     BUCKET_LIST[this.id] = this;
+    this.image = Math.floor(5*Math.random());
   }
 
   draw() {
-    let width = Img.bullet.width / 2 / 1.5;
-    let height = Img.bullet.height / 2 / 1.5;
+    let width = Img.bucketRed.width / 2 / 1.5;
+    let height = Img.bucketRed.height / 2 / 1.5;
 
     let x = this.x - PLAYER_LIST[thisId].x + WIDTH / 2;
     let y = this.y - PLAYER_LIST[thisId].y + HEIGHT / 2;
 
-    ctx.drawImage(Img.bucket, 0, 0, Img.bucket.width, Img.bucket.height,
-      x - width / 2, y - height / 2, width, height);
+    if(this.image >= 0 && this.image < 1)
+      ctx.drawImage(Img.bucketRed, 0, 0, Img.bucketRed.width, Img.bucketRed.height, x - width / 2, y - height / 2, width, height);
+    else if (this.image >= 1 && this.image < 2)
+      ctx.drawImage(Img.bucketGreen, 0, 0, Img.bucketGreen.width, Img.bucketGreen.height, x - width / 2, y - height / 2, width, height);
+    else if (this.image >= 2 && this.image < 3)
+      ctx.drawImage(Img.bucketBlue, 0, 0, Img.bucketBlue.width, Img.bucketBlue.height, x - width / 2, y - height / 2, width, height);
+    else if (this.image >= 3 && this.image < 4)
+      ctx.drawImage(Img.bucketYellow, 0, 0, Img.bucketYellow.width, Img.bucketYellow.height, x - width / 2, y - height / 2, width, height);
+    else if (this.image >= 4 && this.image <= 5)
+      ctx.drawImage(Img.bucketPurple, 0, 0, Img.bucketPurple.width, Img.bucketPurple.height, x - width / 2, y - height / 2, width, height);
+
+
+
   }
 }
 
